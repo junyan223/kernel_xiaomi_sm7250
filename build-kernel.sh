@@ -38,6 +38,15 @@ else
   CC_USE="$CLANG_BIN"; HOSTCC_USE="gcc"; CXX_USE="${CLANG_BIN/clang/clang++}"; log "ccache OFF"
 fi
 
+# ---------- clang trace-header fallback ----------
+# Many CAF 4.19 trace headers end with TRACE_INCLUDE_PATH "." which breaks under clang
+# when the *_trace.h is not in the compiling dir. Add every trace-header dir as -I
+# fallback via KCFLAGS (appended AFTER per-dir ccflags => no shadowing risk).
+TRACE_DIRS="drivers/android drivers/clk/qcom/mdss drivers/devfreq drivers/dma-buf drivers/gpu/drm drivers/gpu/drm/amd/amdgpu drivers/gpu/drm/armada drivers/gpu/drm/i915 drivers/gpu/drm/msm/disp/dpu1 drivers/gpu/drm/radeon drivers/gpu/drm/scheduler drivers/gpu/drm/v3d drivers/gpu/drm/vc4 drivers/gpu/drm/virtio drivers/gpu/msm drivers/hv drivers/media/platform/msm/sde/rotator drivers/mihw drivers/net/ethernet/aquantia/atlantic-fwd drivers/net/ethernet/freescale/dpaa drivers/net/ethernet/intel/i40e drivers/net/ethernet/intel/i40evf drivers/net/ethernet/qualcomm/rmnet drivers/net/fjes drivers/net/hyperv drivers/net/wireless/mediatek/mt76 drivers/platform/msm/ipa/ipa_clients drivers/platform/msm/ipa/ipa_v2 drivers/platform/msm/ipa/ipa_v3 drivers/s390/cio drivers/scsi/fnic drivers/staging/greybus drivers/staging/qca-wifi-host-cmn/qdf/inc drivers/staging/qca-wifi-host-cmn/qdf/linux/src drivers/staging/qcacld-3.0/core/hdd/inc drivers/staging/qcacld-3.0/core/mac/inc drivers/staging/qcacld-3.0/core/mac/src/pe/include drivers/staging/qcacld-3.0/core/sme/inc drivers/usb/musb drivers/video/fbdev/msm fs/ocfs2 fs/xfs include/linux include/trace sound/core sound/pci/hda techpack/camera/drivers/cam_utils techpack/display/msm/sde techpack/display/pll techpack/display/rotator"
+KTRACE=""
+for d in $TRACE_DIRS; do KTRACE="$KTRACE -I$PWD/$d"; done
+
+
 KARGS=(ARCH=arm64 "CC=$CC_USE" "CXX=$CXX_USE" "HOSTCC=$HOSTCC_USE"
        "CLANG_TRIPLE=aarch64-linux-gnu-" "CROSS_COMPILE=$CROSS_COMPILE"
        "LLVM_IAS=1" "KSU_GIT_VERSION=$KSU_PIN_VERSION" "KCFLAGS=$KTRACE")
@@ -47,14 +56,6 @@ fi
 if [ "$USE_LLD" = 1 ]; then KARGS+=("LD=$LLD_BIN"); log "linker: $LLD_BIN"; else log "linker: binutils"; fi
 
 [ -d drivers/kernelsu ] || { log "ERROR: drivers/kernelsu missing - wrong branch?"; exit 1; }
-
-# ---------- clang trace-header fallback ----------
-# Many CAF 4.19 trace headers end with TRACE_INCLUDE_PATH "." which breaks under clang
-# when the *_trace.h is not in the compiling dir. Add every trace-header dir as -I
-# fallback via KCFLAGS (appended AFTER per-dir ccflags => no shadowing risk).
-TRACE_DIRS="drivers/android drivers/clk/qcom/mdss drivers/devfreq drivers/dma-buf drivers/gpu/drm drivers/gpu/drm/amd/amdgpu drivers/gpu/drm/armada drivers/gpu/drm/i915 drivers/gpu/drm/msm/disp/dpu1 drivers/gpu/drm/radeon drivers/gpu/drm/scheduler drivers/gpu/drm/v3d drivers/gpu/drm/vc4 drivers/gpu/drm/virtio drivers/gpu/msm drivers/hv drivers/media/platform/msm/sde/rotator drivers/mihw drivers/net/ethernet/aquantia/atlantic-fwd drivers/net/ethernet/freescale/dpaa drivers/net/ethernet/intel/i40e drivers/net/ethernet/intel/i40evf drivers/net/ethernet/qualcomm/rmnet drivers/net/fjes drivers/net/hyperv drivers/net/wireless/mediatek/mt76 drivers/platform/msm/ipa/ipa_clients drivers/platform/msm/ipa/ipa_v2 drivers/platform/msm/ipa/ipa_v3 drivers/s390/cio drivers/scsi/fnic drivers/staging/greybus drivers/staging/qca-wifi-host-cmn/qdf/inc drivers/staging/qca-wifi-host-cmn/qdf/linux/src drivers/staging/qcacld-3.0/core/hdd/inc drivers/staging/qcacld-3.0/core/mac/inc drivers/staging/qcacld-3.0/core/mac/src/pe/include drivers/staging/qcacld-3.0/core/sme/inc drivers/usb/musb drivers/video/fbdev/msm fs/ocfs2 fs/xfs include/linux include/trace sound/core sound/pci/hda techpack/camera/drivers/cam_utils techpack/display/msm/sde techpack/display/pll techpack/display/rotator"
-KTRACE=""
-for d in $TRACE_DIRS; do KTRACE="$KTRACE -I$PWD/$d"; done
 
 # ---------- defconfig ----------
 log "defconfig: $DEFCONFIG"
