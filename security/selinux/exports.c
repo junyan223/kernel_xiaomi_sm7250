@@ -15,9 +15,14 @@
 #include <linux/selinux.h>
 
 #include "security.h"
+#ifndef _SELINUX_SECURITY_H_
+#include "include/security.h"
+#endif
 
 bool selinux_is_enabled(void)
 {
-	return selinux_enabled;
+	struct selinux_state *state = &selinux_state;
+
+	return state->initialized && !state->disabled;
 }
 EXPORT_SYMBOL_GPL(selinux_is_enabled);
