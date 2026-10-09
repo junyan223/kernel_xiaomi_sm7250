@@ -22,6 +22,11 @@
 #include "flask.h"
 #include "av_permissions.h"
 #include "security.h"
+#ifdef _SELINUX_SECURITY_H_
+#error "PROBE: guard DEFINED => security.h content WAS expanded somewhere"
+#else
+#error "PROBE: guard UNDEFINED => include hit a different/empty file"
+#endif
 
 struct nlmsg_perm {
 	u16	nlmsg_type;
