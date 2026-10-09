@@ -7040,7 +7040,7 @@ static int selinux_perf_event_write(struct perf_event *event)
 int selinux_audit_rule_init(u32 field, u32 op, char *rulestr, void **vrule);
 int selinux_audit_rule_known(struct audit_krule *rule);
 int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
-			     struct audit_buffer *ab);
+			     struct audit_context *actx);
 void selinux_audit_rule_free(void *vrule);
 #endif
 static struct security_hook_list selinux_hooks[] __lsm_ro_after_init = {
