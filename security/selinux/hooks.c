@@ -7035,6 +7035,14 @@ static int selinux_perf_event_write(struct perf_event *event)
 }
 #endif
 
+#ifdef CONFIG_AUDIT
+/* defined in ss/services.c; declarations dropped by vendor patch */
+int selinux_audit_rule_init(u32 field, u32 op, char *rulestr, void **vrule);
+int selinux_audit_rule_known(struct audit_krule *rule);
+int selinux_audit_rule_match(u32 sid, u32 field, u32 op, void *vrule,
+			     struct audit_buffer *ab);
+void selinux_audit_rule_free(void *vrule);
+#endif
 static struct security_hook_list selinux_hooks[] __lsm_ro_after_init = {
 	LSM_HOOK_INIT(binder_set_context_mgr, selinux_binder_set_context_mgr),
 	LSM_HOOK_INIT(binder_transaction, selinux_binder_transaction),
