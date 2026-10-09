@@ -22,10 +22,12 @@
 #include "flask.h"
 #include "av_permissions.h"
 #include "security.h"
-#ifdef _SELINUX_SECURITY_H_
-#error "PROBE: guard DEFINED => security.h content WAS expanded somewhere"
-#else
-#error "PROBE: guard UNDEFINED => include hit a different/empty file"
+#ifndef _SELINUX_SECURITY_H_
+/* quoted include above resolves to a stray file in this tree; force the real one */
+#include "include/security.h"
+#ifndef _SELINUX_SECURITY_H_
+#error "fallback include also failed - investigate include search paths"
+#endif
 #endif
 
 struct nlmsg_perm {
