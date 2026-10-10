@@ -62,10 +62,10 @@ if [ "$USE_LLD" = 1 ]; then KARGS+=("LD=$LLD_BIN"); log "linker: $LLD_BIN"; else
 # ---------- defconfig ----------
 log "defconfig: $DEFCONFIG"
 make -j"$JOBS" "${KARGS[@]}" "$DEFCONFIG"
-./scripts/config --enable KSU
+./scripts/config --disable KSU
 ./scripts/config --disable KSU_DEBUG
 make -j"$JOBS" "${KARGS[@]}" olddefconfig
-grep -E '^CONFIG_KSU' .config || { log "ERROR: CONFIG_KSU not enabled"; exit 1; }
+grep -E '^CONFIG_KSU' .config && { log "ERROR: KSU should be OFF for control build"; exit 1; } || log "KSU is off (control build)"
 
 # ---------- build ----------
 log "building Image (+ Image.gz-dtb for reference) with -j$JOBS"
