@@ -16,7 +16,7 @@ jobs:
             build-essential bc bison flex ccache curl git libssl-dev libelf-dev \
             wget xz-utils python2 python3 device-tree-compiler \
             binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu \
-            gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+            gcc-arm-linux-gnueabi g++-arm-linux-gnueabi llvm-16
           wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s 16 || sudo apt-get install -y clang-13 lld-13
       - name: build
         run: sed -i 's/\r$//' build-kernel.sh && OUT_ROOT=~/kout bash ./build-kernel.sh
