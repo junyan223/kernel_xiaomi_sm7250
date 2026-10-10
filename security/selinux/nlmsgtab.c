@@ -22,6 +22,10 @@
 #include "flask.h"
 #include "av_permissions.h"
 #include "security.h"
+#ifndef _SELINUX_SECURITY_H_
+/* quoted include resolves to a stray file in this tree; force the real one */
+#include "include/security.h"
+#endif
 
 struct nlmsg_perm {
 	u16	nlmsg_type;
