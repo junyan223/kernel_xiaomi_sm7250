@@ -21,8 +21,6 @@
 
 bool selinux_is_enabled(void)
 {
-	struct selinux_state *state = &selinux_state;
-
-	return state->initialized && !state->disabled;
+	return selinux_enabled;
 }
 EXPORT_SYMBOL_GPL(selinux_is_enabled);
