@@ -47,14 +47,27 @@ fi
 # fallback via KCFLAGS (appended AFTER per-dir ccflags => no shadowing risk).
 # -idirafter = searched LAST after all -I/system paths, so it can never hijack a
 # normal include resolution (fix: regmap trace.h was resolving into mt76/s390 dirs).
-TRACE_DIRS="drivers/android drivers/clk/qcom/mdss drivers/devfreq drivers/dma-buf drivers/gpu/drm drivers/gpu/drm/msm/disp/dpu1 drivers/gpu/msm drivers/mihwvf drivers/net/ethernet/qualcomm/rmnet drivers/platform/msm/ipa/ipa_clients drivers/platform/msm/ipa/ipa_v2 drivers/platform/msm/ipa/ipa_v3 drivers/staging/greybus drivers/staging/qca-wifi-host-cmn/qdf/inc drivers/staging/qca-wifi-host-cmn/qdf/linux/src drivers/staging/qcacld-3.0/core/hdd/inc drivers/staging/qcacld-3.0/core/mac/inc drivers/staging/qcacld-3.0/core/mac/src/pe/include drivers/staging/qcacld-3.0/core/sme/inc drivers/usb/musb drivers/video/fbdev/msm include/linux include/trace sound/core techpack/camera/drivers/cam_utils techpack/display/msm/sde techpack/display/pll techpack/display/rotator"
+TRACE_DIRS="drivers/android drivers/clk/qcom/mdss drivers/devfreq drivers/dma-buf drivers/gpu/drm drivers/gpu/drm/amd/amdgpu drivers/gpu/drm/armada drivers/gpu/drm/i915 drivers/gpu/drm/msm/disp/dpu1 drivers/gpu/drm/radeon drivers/gpu/drm/scheduler drivers/gpu/drm/v3d drivers/gpu/drm/vc4 drivers/gpu/drm/virtio drivers/gpu/msm drivers/hv drivers/media/platform/msm/sde/rotator drivers/mihw drivers/net/ethernet/aquantia/atlantic-fwd drivers/net/ethernet/freescale/dpaa drivers/net/ethernet/intel/i40e drivers/net/ethernet/intel/i40evf drivers/net/ethernet/qualcomm/rmnet drivers/net/fjes drivers/net/hyperv drivers/platform/msm/ipa/ipa_clients drivers/platform/msm/ipa/ipa_v2 drivers/platform/msm/ipa/ipa_v3 drivers/s390/cio drivers/scsi/fnic drivers/staging/greybus drivers/staging/qca-wifi-host-cmn/qdf/inc drivers/staging/qca-wifi-host-cmn/qdf/linux/src drivers/staging/qcacld-3.0/core/hdd/inc drivers/staging/qcacld-3.0/core/mac/inc drivers/staging/qcacld-3.0/core/mac/src/pe/include drivers/staging/qcacld-3.0/core/sme/inc drivers/usb/musb drivers/video/fbdev/msm fs/ocfs2 fs/xfs include/linux include/trace sound/core sound/pci/hda techpack/camera/drivers/cam_utils techpack/display/msm/sde techpack/display/pll techpack/display/rotator"
 KTRACE=""
 for d in $TRACE_DIRS; do KTRACE="$KTRACE -idirafter $PWD/$d"; done
 
 
+# LTO kernels need matching LLVM binutils (llvm-ar/llvm-nm/llvm-objcopy)
+LLVM_VARS=()
+if command -v llvm-ar-16 >/dev/null 2>&1; then
+  mkdir -p /tmp/llvmbin
+  for t in ar nm objcopy objdump readelf size strings; do
+    src="$(command -v llvm-$t-16 || true)"
+    [ -n "$src" ] && ln -sf "$src" /tmp/llvmbin/llvm-$t
+  done
+  export PATH=/tmp/llvmbin:$PATH
+  LLVM_VARS=(LLVM=1 LLVM_AR=llvm-ar LLVM_NM=llvm-nm LLVM_OBJCOPY=llvm-objcopy LLVM_OBJDUMP=llvm-objdump LLVM_READELF=llvm-readelf LLVM_SIZE=llvm-size LLVM_STRIP=llvm-strip)
+  log "LLVM binutils active"
+fi
+
 KARGS=(ARCH=arm64 "CC=$CC_USE" "CXX=$CXX_USE" "HOSTCC=$HOSTCC_USE"
        "CLANG_TRIPLE=aarch64-linux-gnu-" "CROSS_COMPILE=$CROSS_COMPILE"
-       "LLVM_IAS=1" "KSU_GIT_VERSION=$KSU_PIN_VERSION" "KCFLAGS=$KTRACE")
+       "LLVM_IAS=1" "KSU_GIT_VERSION=$KSU_PIN_VERSION" "KCFLAGS=$KTRACE" "${LLVM_VARS[@]}")
 if [ -n "${TOOLCHAIN_DIR:-}" ] && [ -x "$TOOLCHAIN_DIR/bin/arm-linux-gnueabi-gcc" ]; then
   KARGS+=("CROSS_COMPILE_COMPAT=$TOOLCHAIN_DIR/bin/arm-linux-gnueabi-")
 fi
