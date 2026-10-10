@@ -16,8 +16,10 @@ jobs:
             build-essential bc bison flex ccache curl git libssl-dev libelf-dev \
             wget xz-utils python2 python3 device-tree-compiler \
             binutils-aarch64-linux-gnu gcc-aarch64-linux-gnu \
-            gcc-arm-linux-gnueabi g++-arm-linux-gnueabi llvm-16
-          wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s 16 || sudo apt-get install -y clang-13 lld-13
+            gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+          # LLVM-16 needs apt.llvm.org repo (not in 22.04 default); llvm.sh installs clang/lld/llvm-16
+          (wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s 16) || { echo 'llvm.sh failed, fallback clang-13'; sudo apt-get install -y clang-13 lld-13; }
+          command -v clang-16 && clang-16 --version | head -1
       - name: build
         run: sed -i 's/\r$//' build-kernel.sh && OUT_ROOT=~/kout bash ./build-kernel.sh
       - uses: actions/upload-artifact@v4
